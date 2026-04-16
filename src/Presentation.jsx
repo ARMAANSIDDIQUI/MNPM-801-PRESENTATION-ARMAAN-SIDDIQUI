@@ -129,17 +129,26 @@ app.use('/api/cms', require('./routes/cmsRoutes'));`,
     type: 'code-slide',
     title: 'WORKER SCHEMA',
     label: 'DB_MODELS/WORKER.JS',
-    code: `const workerSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  phone: { type: String, unique: true },
-  skills: [{ type: String }],
-  isVerified: { type: Boolean, default: false },
-  documents: {
-    aadhar: String,
-    license: String
-  },
-  city: { type: String, required: true }
-});`,
+    code: `// Schema extends beyond slide view
+// Click here to explore the full logic
+// containing auth links, ratings, & bio info`,
+    modalCode: `const mongoose = require('mongoose');
+
+const workerSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Link to auth account
+    workerId: { type: String, unique: true }, // Stable identifier (e.g., WRK-101)
+    name: { type: String, required: true },
+    profession: { type: String, required: true }, // e.g. Cook, Babysitter
+    rating: { type: Number, default: 5.0 },
+    numReviews: { type: Number, default: 0 },
+    experienceYears: { type: Number },
+    imageUrl: { type: String }, // Cloudinary URL
+    bio: { type: String }, // Story or description
+    isAvailable: { type: Boolean, default: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.models.Worker || mongoose.model('Worker', workerSchema);`,
     details: [
       'Strongly typed fields with validation.',
       'Document sub-schema for tracking.',
@@ -155,13 +164,48 @@ app.use('/api/cms', require('./routes/cmsRoutes'));`,
       { icon: <GitBranch />, title: 'Relational Logic', desc: 'Referencing IDs across collections.' },
       { icon: <Network />, title: 'Dynamic Fields', desc: 'JSON arrays for form questions.' }
     ],
-    label: 'DB_RELATIONS.JS',
-    code: `// Relation Example
-const bookingSchema = {
-  user: { type: ObjectId, ref: 'User' },
-  service: { type: ObjectId, ref: 'SubCategory' },
-  worker: { type: ObjectId, ref: 'Worker' }
-};`
+    label: 'DB_MODELS/BOOKING.JS',
+    code: `// Extensive Relational Logic
+// Click to open FULL BOOKING SCHEMA 
+// showing items, arrays, and sub-documents`,
+    modalCode: `const mongoose = require('mongoose');
+
+const bookingSchema = new mongoose.Schema({
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    items: [{
+        subCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'SubCategory' },
+        quantity: { type: Number, default: 1 },
+        answers: { type: Map, of: String }, // Dynamic answers for this item
+        price: { type: Number }
+    }],
+    genderPreference: { type: String },
+    serviceType: { type: String }, // Stores the main service name (e.g., "Babysitter", "Cook")
+    babyDOB: { type: Date },
+    frequency: { type: String, enum: ['One-time', 'Daily', 'Weekly', 'Live-in', 'Day-shift', 'Part-time'], default: 'Daily', required: true },
+    weeklyDays: [{ type: Number, min: 0, max: 6 }], // 0=Sunday, 1=Monday, ... 6=Saturday
+    date: { type: Date, required: true },
+    address: { type: String, required: true },
+    phone: { type: String, required: true },
+    notes: { type: String },
+    status: { type: String, enum: ['pending', 'approved', 'rejected', 'completed'], default: 'pending' },
+    serviceStatus: { type: String, enum: ['active', 'completed', 'cancelled'], default: 'active' },
+    paymentProofUrl: { type: String }, // Cloudinary URL
+    paymentStatus: { type: String, enum: ['unpaid', 'pending_approval', 'paid'], default: 'unpaid' },
+    time: { type: String }, // e.g., "10:00 AM"
+    attendanceLogs: [{
+        date: { type: Date, required: true },
+        status: { type: String, enum: ['present', 'absent', 'not_marked'], default: 'not_marked' },
+        markedBy: { type: String, enum: ['admin', 'user', 'worker'], default: 'admin' }
+    }],
+    assignedWorker: { type: mongoose.Schema.Types.ObjectId, ref: 'Worker' },
+    startDate: { type: Date },
+    endDate: { type: Date }, // For subscription duration
+    totalAmount: { type: Number },
+    showAllocationDetails: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.models.Booking || mongoose.model('Booking', bookingSchema);`
   },
   {
     type: 'tech-deep',
@@ -213,12 +257,15 @@ const bookingSchema = {
 ];
 
 // SHARED COMPONENTS
-const DesignCodeCard = ({ code, label, bgColor = "bg-brand-yellow" }) => (
-    <div className={`relative w-full ${bgColor} border-2 border-black p-6 md:p-10 shadow-[10px_10px_0px_0px_#7C3AED] hover:shadow-[15px_15px_0px_0px_#7C3AED] transition-all group overflow-hidden`}>
+const DesignCodeCard = ({ code, label, bgColor = "bg-brand-yellow", onClick }) => (
+    <div 
+        onClick={onClick}
+        className={`relative w-full ${bgColor} border-2 border-black p-6 md:p-10 shadow-[10px_10px_0px_0px_#7C3AED] hover:shadow-[15px_15px_0px_0px_#7C3AED] transition-all group overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}
+    >
         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition-opacity">
-            <Code2 size={40} className="text-black" />
+            {onClick ? <Maximize2 size={40} className="text-black" /> : <Code2 size={40} className="text-black" />}
         </div>
-        <pre className="text-black text-sm md:text-xl font-mono font-bold leading-relaxed overflow-x-auto custom-scrollbar italic mb-12">
+        <pre className={`text-black text-sm md:text-xl font-mono font-bold leading-relaxed overflow-x-auto custom-scrollbar italic mb-12 ${onClick ? 'opacity-80 group-hover:opacity-100 transition-opacity whitespace-pre-wrap' : ''}`}>
             {code}
         </pre>
         <div className="absolute bottom-6 left-0 right-0 px-8">
@@ -245,6 +292,7 @@ const SlideWrapper = ({ children, bgColor = "bg-white" }) => (
 export default function Presentation() {
   const [current, setCurrent] = useState(0);
   const [selectedImg, setSelectedImg] = useState(null);
+  const [selectedCode, setSelectedCode] = useState(null);
 
   const next = () => {
     if (current < SLIDES.length - 1) setCurrent(current + 1);
@@ -266,7 +314,10 @@ export default function Presentation() {
     const handleKey = (e) => {
       if (e.key === 'ArrowRight' || e.key === ' ') next();
       if (e.key === 'ArrowLeft') prev();
-      if (e.key === 'Escape') setSelectedImg(null);
+      if (e.key === 'Escape') {
+          setSelectedImg(null);
+          setSelectedCode(null);
+      }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
@@ -277,6 +328,47 @@ export default function Presentation() {
   return (
     <div className="w-screen h-screen flex flex-col items-center justify-center p-2 md:p-4 overflow-hidden relative">
       
+      {/* Code Modal */}
+      <AnimatePresence>
+        {selectedCode && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 md:p-8 cursor-zoom-out"
+            onClick={() => setSelectedCode(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="relative w-full max-w-5xl max-h-[90vh] bg-white border-4 border-black shadow-[20px_20px_0px_0px_#7C3AED] flex flex-col cursor-default"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setSelectedCode(null)}
+                className="absolute -top-6 -right-6 md:-top-8 md:-right-8 w-12 h-12 md:w-16 md:h-16 bg-white text-black flex items-center justify-center border-4 border-black font-black hover:bg-brand-pink transition-colors z-10 shadow-[4px_4px_0px_0px_#000]"
+              >
+                <X size={32} />
+              </button>
+              
+              <div className="bg-brand-yellow text-black p-4 border-b-4 border-black flex items-center justify-between shrink-0">
+                  <div className="font-black text-xl md:text-2xl tracking-tighter uppercase italic text-black">
+                      {selectedCode.label}
+                  </div>
+                  <Code2 className="text-black" size={28} />
+              </div>
+              
+              <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-grow bg-slate-50">
+                  <pre className="text-black text-xs md:text-sm lg:text-base font-mono font-bold leading-relaxed whitespace-pre-wrap">
+                      {selectedCode.code}
+                  </pre>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Image Modal */}
       <AnimatePresence>
         {selectedImg && (
@@ -405,7 +497,11 @@ export default function Presentation() {
                   <div className="w-full max-w-6xl">
                        <h2 className="text-5xl md:text-7xl font-black mb-12 text-black uppercase tracking-tighter bg-brand-pink inline-block px-4 py-2 border-4 border-black shadow-[6px_6px_0px_0px_#000]">{slide.title}</h2>
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                          <DesignCodeCard code={slide.code} label={slide.label} />
+                          <DesignCodeCard 
+                            code={slide.code} 
+                            label={slide.label} 
+                            onClick={slide.modalCode ? () => setSelectedCode({ code: slide.modalCode, label: slide.label }) : null}
+                          />
                           <div className="flex flex-col justify-center gap-4">
                               {slide.details.map((d, i) => (
                                   <div key={i} className="flex gap-6 items-center bg-white border-4 border-black p-4 shadow-[4px_4px_0px_0px_#000]">
@@ -473,7 +569,12 @@ export default function Presentation() {
                                 </div>
                             ))}
                           </div>
-                          <DesignCodeCard code={slide.code} label={slide.label} bgColor="bg-brand-yellow" />
+                          <DesignCodeCard 
+                            code={slide.code} 
+                            label={slide.label} 
+                            bgColor="bg-brand-yellow" 
+                            onClick={slide.modalCode ? () => setSelectedCode({ code: slide.modalCode, label: slide.label }) : null}
+                          />
                        </div>
                   </div>
               )}
