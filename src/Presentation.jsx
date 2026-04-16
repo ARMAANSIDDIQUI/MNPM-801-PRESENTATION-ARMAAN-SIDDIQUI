@@ -380,8 +380,10 @@ export default function Presentation() {
 
                {slide.type === 'list' && (
                 <div className="w-full max-w-7xl">
-                   <h2 className="text-6xl md:text-8xl font-black text-black mb-12 border-b-8 border-black inline-block uppercase italic tracking-tighter">{slide.title}</h2>
-                   <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-5 md:grid-flow-col gap-4 md:gap-6">
+                   <div className="w-full text-center mb-12">
+                       <h2 className="text-6xl md:text-8xl font-black text-black border-b-8 border-black inline-block uppercase italic tracking-tighter">{slide.title}</h2>
+                   </div>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                       {slide.items.map((item, i) => {
                           const colors = ['bg-brand-purple', 'bg-brand-yellow', 'bg-brand-pink', 'bg-white'];
                           const currentBg = colors[i % colors.length];
