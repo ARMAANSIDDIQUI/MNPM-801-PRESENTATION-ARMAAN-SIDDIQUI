@@ -379,19 +379,19 @@ export default function Presentation() {
               )}
 
                {slide.type === 'list' && (
-                <div className="w-full max-w-4xl">
+                <div className="w-full max-w-7xl">
                    <h2 className="text-6xl md:text-8xl font-black text-black mb-12 border-b-8 border-black inline-block uppercase italic tracking-tighter">{slide.title}</h2>
-                   <div className="grid grid-cols-1 gap-4">
+                   <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-5 md:grid-flow-col gap-4 md:gap-6">
                       {slide.items.map((item, i) => {
                           const colors = ['bg-brand-purple', 'bg-brand-yellow', 'bg-brand-pink', 'bg-white'];
                           const currentBg = colors[i % colors.length];
                           const textColor = currentBg === 'bg-brand-purple' ? 'text-white' : 'text-black';
                           return (
-                              <div key={i} className={`flex items-center gap-6 p-5 ${currentBg} border-4 border-black shadow-[8px_8px_0px_0px_#000] hover:-translate-y-1 hover:translate-x-1 transition-all cursor-default`}>
-                                  <div className="w-14 h-14 bg-black text-white flex items-center justify-center font-black text-3xl italic border-r-4 border-black shrink-0">
+                              <div key={i} className={`flex items-center gap-4 p-4 ${currentBg} border-4 border-black shadow-[6px_6px_0px_0px_#000] hover:-translate-y-1 hover:translate-x-1 transition-all cursor-default`}>
+                                  <div className="w-12 h-12 bg-black text-white flex items-center justify-center font-black text-2xl italic border-r-4 border-black shrink-0">
                                       {(i+1).toString().padStart(2, '0')}
                                   </div>
-                                  <span className={`text-2xl md:text-4xl font-black ${textColor} uppercase tracking-tighter italic`}>{item}</span>
+                                  <span className={`text-xl md:text-2xl lg:text-3xl font-black ${textColor} uppercase tracking-tighter italic leading-tight`}>{item}</span>
                               </div>
                           );
                       })}
